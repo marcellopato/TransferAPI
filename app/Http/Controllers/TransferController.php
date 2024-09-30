@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Http\Request;
@@ -39,7 +40,6 @@ class TransferController extends Controller
             return response()->json(['error' => 'Autorização negada'], 403);
         }
 
-        // Transação atômica para garantir consistência
         DB::transaction(function () use ($payer, $request) {
             $payer->saldo -= $request->value;
             $payer->save();
@@ -49,10 +49,8 @@ class TransferController extends Controller
             $payee->save();
         });
 
-        // Tentar enviar a notificação
         $notificationResult = $this->sendNotification($request->payee, $request->value);
 
-        // Retornar o resultado da transferência e da notificação
         return response()->json([
             'status' => 'Transferência realizada com sucesso!',
             'notification' => $notificationResult['message'],
@@ -79,7 +77,7 @@ class TransferController extends Controller
                 'message' => 'Notificação enviada com sucesso!'
             ];
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return [
                 'status' => 'fail',
                 'message' => 'Transferência realizada, mas houve um erro ao enviar a notificação: ' . $e->getMessage(),
