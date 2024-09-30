@@ -1,4 +1,4 @@
-<img src="https://github.com/marcellopato/TransferAPI/blob/main/public/images/transferAPI.png">
+<img src="https://github.com/marcellopato/TransferAPI/blob/main/public/images/transferAPI.png" style="width: 300px;">
 
 # Bem-vindo ao desenvolvimento do TransferAPI
 
