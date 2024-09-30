@@ -31,8 +31,7 @@ class TransferController extends Controller
             return response()->json(['error' => 'Saldo insuficiente'], 400);
         }
 
-        // Chamar o serviço de autorização externa
-        $client = new \GuzzleHttp\Client();
+        $client = new Client();
         $response = $client->get('https://util.devi.tools/api/v2/authorize');
         $authorization = json_decode($response->getBody()->getContents());
 
@@ -64,7 +63,7 @@ class TransferController extends Controller
 
     private function sendNotification($payeeId, $value)
     {
-        $client = new \GuzzleHttp\Client();
+        $client = new Client();
         $payee = User::find($payeeId);
 
         try {
