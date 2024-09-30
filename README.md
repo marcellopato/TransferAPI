@@ -29,4 +29,4 @@ docker run --rm \
 
 `./vendor/bin/sail artisan migrate`,
 
-`./vendor/bin/sail artisan db:seed`
+`./vendor/bin/sail artisan db:seed --class=UsersSeeder`
