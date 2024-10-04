@@ -6,6 +6,7 @@ use App\Models\User;
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Exception\RequestException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -14,6 +15,7 @@ class TransferController extends Controller
     /**
      * @throws GuzzleException
      */
+
     public function store(Request $request)
     {
         $request->validate([
@@ -32,12 +34,23 @@ class TransferController extends Controller
             return response()->json(['error' => 'Saldo insuficiente'], 400);
         }
 
-        $client = new Client();
-        $response = $client->get('https://util.devi.tools/api/v2/authorize');
-        $authorization = json_decode($response->getBody()->getContents());
+        try {
+            // Tentar fazer a chamada à API externa de autorização
+            $client = new Client();
+            $response = $client->get('https://util.devi.tools/api/v2/authorize');
+            $authorization = json_decode($response->getBody()->getContents());
 
-        if ($authorization->data->authorization === false) {
-            return response()->json(['error' => 'Autorização negada'], 403);
+            if ($authorization->data->authorization === false) {
+                return response()->json(['error' => 'Autorização negada pela API externa.'], 403);
+            }
+
+        } catch (RequestException $e) {
+            if ($e->getResponse() && $e->getResponse()->getStatusCode() === 403) {
+                // Tratar o caso específico de "403 Forbidden"
+                return response()->json(['error' => 'Autorização negada pela API externa.'], 403);
+            }
+
+            return response()->json(['error' => 'Ocorreu um erro ao tentar autorizar a transferência. Por favor, tente novamente mais tarde.'], 500);
         }
 
         DB::transaction(function () use ($payer, $request) {
@@ -56,6 +69,7 @@ class TransferController extends Controller
             'notification' => $notificationResult['message'],
         ]);
     }
+
 
 
 
